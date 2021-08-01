@@ -3,25 +3,25 @@
 #include <NewPing.h>
 #include <EEPROM.h>
 
-#define TRIGGER_PIN 16                              // Arduino pin tied to trigger pin on the ultrasonic sensor.
-#define ECHO_PIN 16                                 // Arduino pin tied to echo pin on the ultrasonic sensor.
+#define TRIGGER_PIN 16 // D0                           // Arduino pin tied to trigger pin on the ultrasonic sensor.
+#define ECHO_PIN 16 // D0                                 // Arduino pin tied to echo pin on the ultrasonic sensor.
 #define MAX_DISTANCE 130                            // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 NewPing sonar(TRIGGER_PIN, ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
 
 // Instantiation and pins configurations
-#define CLK_PIN 14
-#define DIO_PIN 12
+#define CLK_PIN 12 // D6
+#define DIO_PIN 14 // D5 
 TM1637 tm1637(DIO_PIN, CLK_PIN);
 
-#define BUTTON_1_PIN 4
-#define BUTTON_2_PIN 5
-#define BUTTON_3_PIN 2
-#define BUTTON_4_PIN 0
+#define BUTTON_1_PIN 2 // D4
+#define BUTTON_2_PIN 5 // D1
+#define BUTTON_3_PIN 4 // D2
+#define BUTTON_4_PIN 0 // D3
 
-#define H_BRIDGE_RPWM 13
-#define H_BRIDGE_LPWM 15
+#define H_BRIDGE_RPWM 13 // D7
+#define H_BRIDGE_LPWM 15 // D8
 
-#define MOTOR_SPEED 127
+#define MOTOR_SPEED 254
 
 void goUp()
 {
@@ -136,7 +136,14 @@ bool setHeight = false;
 
 void loop()
 {
-  stop();
+  // no buttons pressed
+  if (digitalRead(BUTTON_1_PIN) == HIGH &&
+      digitalRead(BUTTON_2_PIN) == HIGH &&
+      digitalRead(BUTTON_3_PIN) == HIGH &&
+      digitalRead(BUTTON_4_PIN) == HIGH)
+  {
+    stop();
+  }
   display(getCurrentHeight());
 
   //if we are not in the setting height mode
@@ -176,7 +183,11 @@ void loop()
     }
   }
 
-  if (digitalRead(BUTTON_3_PIN) == LOW)
+  if (digitalRead(BUTTON_3_PIN) == HIGH && digitalRead(BUTTON_4_PIN) == HIGH)
+  {
+    stop();
+  }
+  if (digitalRead(BUTTON_3_PIN) == LOW && digitalRead(BUTTON_4_PIN) == HIGH)
   {
     // set a limite so we don't break the desk
     // if (getCurrentHeight() < 117)
@@ -184,7 +195,7 @@ void loop()
     goUp();
     // }
   }
-  if (digitalRead(BUTTON_4_PIN) == LOW)
+  if (digitalRead(BUTTON_4_PIN) == LOW && digitalRead(BUTTON_3_PIN) == HIGH)
   {
     // set a limite so we don't break the desk
     // if (getCurrentHeight() > 71)
@@ -192,6 +203,8 @@ void loop()
     goDown();
     // }
   }
+
+
 
   Serial.print("Ping: ");
   Serial.print(getCurrentHeight()); // Send ping, get distance in cm and print result (0 = outside set distance range)
@@ -205,5 +218,5 @@ void loop()
   Serial.println(getHeightValue(0));
   Serial.println(getHeightValue(1));
   Serial.println();
-  delay(250);
+  delay(50);
 }
